@@ -6,8 +6,7 @@
 # separate terms of service, privacy policy, and support
 # documentation.
 
-name: Java CI with Maven
-
+name: Java CI with Maven and Automatic Merge
 on:
   push:
     branches: [ "main" ]
@@ -16,9 +15,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 17
@@ -30,18 +27,40 @@ jobs:
     - name: Build with Maven
       run: mvn -B package --file pom.xml
 
-  merge:
-    runs-on: ubuntu-latest
+  auto-merge:
     needs: build
-    if: github.event.pull_request.merged == false && success()
-
+    runs-on: ubuntu-latest
+    # Only run auto-merge for pull requests
+    if: github.event_name == 'pull_request'
     steps:
-    - name: Checkout the code
-      uses: actions/checkout@v4
-    - name: Merge PR
-      uses: peter-evans/merge-pull-request@v3
+    - name: Merge pull request
+      uses: actions/github-script@v7
       with:
-        pull-request-number: ${{ github.event.pull_request.number }}
-        merge-method: squash # 或者使用 merge 或 rebase，根据需要选择
-        token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          // Check if the build job was successful
+          const checkRuns = await github.rest.checks.listForRef({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            ref: context.payload.pull_request.head.sha
+          });
+
+          const allChecksPassed = checkRuns.data.check_runs.every(
+            run => run.conclusion === 'success'
+          );
+
+          // Additional conditions for merging (optional)
+          const isApproved = context.payload.pull_request.reviews.some(
+            review => review.state === 'APPROVED'
+          );
+
+          // Merge the PR if all checks pass
+          if (allChecksPassed) {
+            await github.rest.pulls.merge({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              merge_method: 'squash' // You can change this to 'merge' or 'rebase'
+            });
+          }
 
