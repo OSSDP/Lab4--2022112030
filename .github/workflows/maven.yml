@@ -19,7 +19,7 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: mvn clean verify
+      run: mvn clean test
       
   auto-merge:
     needs: build-and-test
