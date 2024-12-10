@@ -33,7 +33,7 @@ jobs:
         restore-keys: ${{ runner.os }}-m2
     - name: Run tests with Maven
       run: mvn -B test --file pom.xml
-    - name: Build tests with Maven
+    - name: Build with Maven
       run: mvn -B package --file pom.xml
 
   auto-merge:
