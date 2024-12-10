@@ -20,7 +20,7 @@ class L2022112030_16_Test
         Solution16 solution = new Solution16();
         String result = solution.largestNumber(new int[]{3, 30, 34, 5, 9});
         // 期望输出："9534330"
-        assertEquals("953433", result);
+        assertEquals("9534330", result);
     }
 
     @Test
