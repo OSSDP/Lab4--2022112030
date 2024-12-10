@@ -24,8 +24,8 @@ jobs:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-m2
-      - name: Build with Maven
-        run: mvn clean test -B -U
+      - name: Run tests with Maven
+        run: mvn -B test --file pom.xml
       
   auto-merge:
     needs: build-and-test
